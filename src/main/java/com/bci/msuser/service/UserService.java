@@ -1,7 +1,8 @@
-package com.bci.msuser.service;
+package com.bci.msuser;
 
 
 import com.bci.msuser.dto.LoginDTO;
+import com.bci.msuser.dto.TokenDTO;
 import com.bci.msuser.dto.UserDTO;
 import com.bci.msuser.exception.customerrors.EmailNotFoundException;
 import com.bci.msuser.exception.customerrors.ValidatorErrorException;
@@ -15,7 +16,7 @@ public interface UserService {
    boolean createUser(UserDTO userDTO);
 
 
-   boolean signIn(LoginDTO loginDTO) throws  EmailNotFoundException , ValidatorErrorException ;
+   TokenDTO signIn(LoginDTO loginDTO) throws  EmailNotFoundException , ValidatorErrorException ;
 
-
+   void tokenValidation(String username,String token );
 }

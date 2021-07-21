@@ -1,58 +1,71 @@
-package com.bci.msuser.service;
+package com.bci.msuser;
 
 import com.bci.msuser.dto.LoginDTO;
+import com.bci.msuser.dto.TokenDTO;
 import com.bci.msuser.dto.UserDTO;
 
-import com.bci.msuser.exception.ExceptionHandling;
 import com.bci.msuser.exception.customerrors.EmailNotFoundException;
 import com.bci.msuser.exception.customerrors.ValidatorErrorException;
 import com.bci.msuser.model.UserModel;
 import com.bci.msuser.repository.UserRepository;
+import com.bci.msuser.security.JWTTokenProvider;
 import com.bci.msuser.security.UserPrincipal;
 import com.bci.msuser.util.RandomUUIDGeneration;
 import com.bci.msuser.util.Validators;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import java.time.Instant;
 
+import static com.bci.msuser.enumeration.Role.*;
+import static com.bci.msuser.constant.SecurityConstant.*;
 
-
-@Slf4j
-@Service("userServiceImpl")
+@Service
+@Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
-    @Autowired
-    private  UserRepository userRepository;
+
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RandomUUIDGeneration customUUID = new RandomUUIDGeneration();
     private Validators validators = new Validators();
+    @Autowired
+    private JWTTokenProvider jwtTokenProvider= new JWTTokenProvider();
 
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
-
-    public UserServiceImpl(UserRepository userRepository, ModelMapper modelMapper, BCryptPasswordEncoder bCryptPasswordEncoder){
-        this.userRepository=userRepository;
-        this.modelMapper=modelMapper;
-        this.bCryptPasswordEncoder=bCryptPasswordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager = new AuthenticationManager() {
+        @Override
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+            return null;
+        }
+    };
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository,ModelMapper modelMapper){
+        this.userRepository= userRepository;
+        this.modelMapper= modelMapper;
     }
 
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserModel user = userRepository.findByEmail(email);
         if (user == null) {
-
-            throw new Error(email);
-        } else {
+            throw new UsernameNotFoundException("El correo : "+ email+ "no se encuentra registrado");
+        }
+        else {
             user.setLastLogin(Instant.now());
             userRepository.save(user);
             UserPrincipal userPrincipal = new UserPrincipal(user);
@@ -73,6 +86,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 user.setLastLogin(Instant.now());
                 user.setIsActive(true);
                 user.setModifiedAt(Instant.now());
+                user.setRole(ROLE_USER.name());
+                user.setAuthorities(ROLE_USER.getAuthorities());
                 userRepository.save(user);
                 return true;
             }
@@ -85,32 +100,49 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public boolean signIn(LoginDTO loginDTO) throws  EmailNotFoundException ,ValidatorErrorException{
+    public TokenDTO signIn(LoginDTO loginDTO) throws  EmailNotFoundException ,ValidatorErrorException{
         try{
             UserModel findUserByEmail = userRepository.findByEmail(loginDTO.getEmail());
+
             if(findUserByEmail!=null){
+                authenticate(loginDTO.getEmail(), loginDTO.getPassword());
+                UserPrincipal userPrincipal= new UserPrincipal(findUserByEmail);
+                String accessToken=jwtTokenProvider.generateJwtToken(userPrincipal);
+                //HttpHeaders jwtHeader = getJwtHeader(userPrincipal);
 
-                if(bCryptPasswordEncoder.matches(loginDTO.getPassword(), findUserByEmail.getPassword())){
-                    if(findUserByEmail.getIsActive()){{
-                        return true;
-                    }
-
-                    }
-                   throw new ValidatorErrorException("Incorrect password");
-
-                }
+                findUserByEmail.setAccessToken(accessToken);
+                userRepository.save(findUserByEmail);
+                return TokenDTO.builder().accessToken(accessToken).build();
             }
             throw new EmailNotFoundException("The username :"+ loginDTO.getEmail() +"is not found");
         }
         catch(Exception e){
             System.out.println(e.toString());
-            return false;
+            return null;
         }
+    }
+
+    @Override
+    public void tokenValidation(String username,String token ){
+        System.out.println(jwtTokenProvider.isTokenValid(username,token)) ;
+        System.out.println(jwtTokenProvider.getSubject(token));
+
     }
 
     @Override
     public UserModel findUserByEmail(String email){
         return userRepository.findByEmail(email);
+    }
+
+
+    private HttpHeaders getJwtHeader(UserPrincipal user) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(JWT_TOKEN_HEADER, jwtTokenProvider.generateJwtToken(user));
+        return headers;
+    }
+
+    private void authenticate(String username, String password) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     }
 
 }
