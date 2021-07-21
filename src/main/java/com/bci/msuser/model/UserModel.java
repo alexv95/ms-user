@@ -49,13 +49,16 @@ public class UserModel implements Serializable {
     @LastModifiedBy
     private Instant lastLogin;
 
-    @Field(value="accessToken")
-    private String accessToken;
-
     @Field(value="isActive")
     private Boolean isActive;
 
     @Field(value="phones")
     private List<PhoneModel> phones;
+
+    @Field(value="role")
+    private String role; //ROLE_USER{ read, edit }, ROLE_ADMIN {delete}
+
+    @Field(value="authorities")
+    private String[] authorities;
 
 }

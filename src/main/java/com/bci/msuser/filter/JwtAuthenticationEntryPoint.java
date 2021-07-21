@@ -1,4 +1,4 @@
-package com.bci.msuser.security;
+package com.bci.msuser.filter;
 
 import com.bci.msuser.constant.HttpResponse;
 import org.springframework.stereotype.Component;
@@ -19,6 +19,11 @@ import static com.bci.msuser.constant.SecurityConstant.FORBIDDEN_MESSAGE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Component
 public class JwtAuthenticationEntryPoint extends Http403ForbiddenEntryPoint  {
+
+
+    /**
+     * authentication error
+     * */
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {

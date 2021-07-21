@@ -1,6 +1,8 @@
-package com.bci.msuser.security;
+package com.bci.msuser.filter;
 
 import static com.bci.msuser.constant.SecurityConstant.*;
+
+import com.bci.msuser.filter.JWTTokenProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +27,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+
+    /**
+     * filter to get the token and check its validation
+     * */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (request.getMethod().equalsIgnoreCase(OPTIONS_HTTP_METHOD)) {

@@ -1,1 +1,1 @@
-package com.bci.msuser.service;
+package com.bci.msuser;

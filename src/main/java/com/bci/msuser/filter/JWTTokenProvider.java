@@ -1,10 +1,11 @@
-package com.bci.msuser.security;
+package com.bci.msuser.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.bci.msuser.constant.SecurityConstant;
+import com.bci.msuser.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Value;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,6 +34,9 @@ public class JWTTokenProvider {
     @Value("${jwt.secret}")
     private String SECRET;
 
+    /**
+     * generates a jwt token
+    * */
     public String generateJwtToken(UserPrincipal userPrincipal) {
         String[] claims = getClaimsFromUser(userPrincipal);
         return JWT.create().withIssuer(GET_ARRAYS_LLC).withAudience(GET_ARRAYS_ADMINISTRATION)
@@ -43,11 +47,18 @@ public class JWTTokenProvider {
                 .sign(HMAC512(SECRET.getBytes()));
     }
 
+
+    /**
+     * get authorities from token
+     * */
     public List<GrantedAuthority> getAuthorities(String token) {
         String[] claims = getClaimsFromToken(token);
         return stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
+    /**
+     * not being used
+     * */
     public Authentication getAuthentication(String username, List<GrantedAuthority> authorities, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken userPasswordAuthToken = new
                 UsernamePasswordAuthenticationToken(username, null, authorities);
@@ -65,18 +76,24 @@ public class JWTTokenProvider {
     }
 
     /**
-     * return the username
+     * return the username from a token
      * */
     public String getSubject(String token) {
         JWTVerifier verifier = getJWTVerifier();
         return verifier.verify(token).getSubject();
     }
 
+    /**
+     *  check if the token is expired
+     * */
     private boolean isTokenExpired(JWTVerifier verifier, String token) {
         Date expiration = verifier.verify(token).getExpiresAt();
         return expiration.before(new Date());
     }
 
+    /**
+     * return authorities of token
+     * */
     private String[] getClaimsFromToken(String token) {
         JWTVerifier verifier = getJWTVerifier();
         return verifier.verify(token).getClaim(AUTHORITIES).asArray(String.class);
@@ -92,6 +109,10 @@ public class JWTTokenProvider {
         }
         return verifier;
     }
+
+    /**
+     * return user authorities
+     * */
     private String[] getClaimsFromUser(UserPrincipal user) {
         List<String> authorities = new ArrayList<>();
         for (GrantedAuthority grantedAuthority : user.getAuthorities()){

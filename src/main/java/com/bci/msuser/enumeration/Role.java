@@ -1,10 +1,11 @@
 package com.bci.msuser.enumeration;
 
-public class Role {
+import static com.bci.msuser.constant.Authority.*;
 
 
+public enum Role {
     ROLE_USER(USER_AUTHORITIES);
-    public static final String[] USER_AUTHORITIES = { "user:read" };
+
     private String[] authorities;
 
     Role(String... authorities) {

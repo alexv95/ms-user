@@ -1,4 +1,4 @@
-package com.bci.msuser.security;
+package com.bci.msuser.filter;
 
 
 import com.bci.msuser.constant.HttpResponse;
@@ -19,6 +19,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
+
+
+    /**
+     * handle access error  to unauthorized requests
+     * */
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException {

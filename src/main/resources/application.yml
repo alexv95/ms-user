@@ -6,14 +6,14 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/everis
+      uri: mongodb://localhost:27017/'{your app db}'
 
 server:
   port: 8080
   shutdown: graceful
 
 jwt:
-  secret: '123456789'
+  secret: '{your app secret}'
 
 swagger:
   basePackageScan: com.bci.msuser.controller

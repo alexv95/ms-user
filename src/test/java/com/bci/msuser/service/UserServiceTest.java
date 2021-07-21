@@ -24,10 +24,11 @@ import static com.bci.msuser.constant.UserServiceTestConstant.*;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class UserServiceImplTest {
+class UserServiceTest {
 
     @Autowired
     private UserService userService;
+
     private UserServiceTestConstant userServiceTestConstant= new UserServiceTestConstant();
 
     @Autowired
@@ -39,14 +40,12 @@ class UserServiceImplTest {
     void createUser()throws EmailExistException,ValidatorErrorException,EmailNotFoundException
     {
         UserOutputDTO response= userService.createUser(userServiceTestConstant.CREATE_VALID_USER());
-
         /**
          * the following line compares if response is equal to the output class,
          * it does not verify the integrity of the values
          * */
         Assert.assertEquals(UserOutputDTO.class,response.getClass());
     }
-
     @Test
     @Order(2)
     void createUserWithExistingData() throws EmailExistException,ValidatorErrorException{
