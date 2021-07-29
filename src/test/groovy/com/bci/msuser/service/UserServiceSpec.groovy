@@ -64,7 +64,6 @@ class UserServiceSpec extends Specification {
     }
 
     def "signIn" (){
-
         given:
             LoginDTO loginDTO = LoginDTO.builder().email("juan@rodriguez.com").password("Basuraa13").build()
             userService.signIn(_)>> TokenDTO.builder().build()
@@ -75,8 +74,6 @@ class UserServiceSpec extends Specification {
             def token =TokenDTO.builder().build()
             token.getAccessToken()!= response.getAccessToken()
     }
-
-
     def "find user by email"(){
         given: "Creates a constant with an existing email"
             def constant ="juan@rodriguez.com"

@@ -49,23 +49,6 @@ class UserControllerSpec extends Specification {
         HttpStatus.OK.value() ==response.getStatus()
     }
 
-    def "create invalid user fails"(){
-
-        given:
-            List<PhoneDTO> phones = new ArrayList<>()
-            phones.add(PHONE_OBJECT)
-             def userFail = UserDTO.builder().email(MAIL).password(INVALID_PASSWORD).name(NAME).phones(phones).build()
-
-
-        when:
-            def response = mockMvc.perform(post("/user")
-                .contentType(MediaType.APPLICATION_JSON).
-                content(gson.toJson(userFail)))
-                .andReturn().response
-        then:
-            HttpStatus.BAD_REQUEST.value() ==response.getStatus()
-    }
-
 
 
 
