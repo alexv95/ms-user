@@ -85,6 +85,8 @@ public class ExceptionHandling implements ErrorController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<HttpResponse> internalServerErrorException(Exception exception) {
+        System.out.println(exception.getMessage());
+        exception.printStackTrace();
         return createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
     }
 }

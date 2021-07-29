@@ -89,15 +89,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 user.setRole(ROLE_USER.name());
                 user.setAuthorities(ROLE_USER.getAuthorities());
                 userRepository.save(user);
+                //UserModel findAgain = findUserByEmail(user.getEmail());
+                //authenticate(userDTO.getEmail(), userDTO.getPassword());
                 UserPrincipal userPrincipal= new UserPrincipal(user);
                 String accessToken=jwtTokenProvider.generateJwtToken(userPrincipal);
-                /*TokenDTO callSignIn=this.signIn(
-                        LoginDTO.
-                        builder().
-                        email(userDTO.getEmail()).
-                        password(userDTO.getPassword()).
-                        build()
-                );*/
                 UserOutputDTO userOutputDTO = modelMapper.map(user,UserOutputDTO.class);
                 userOutputDTO.setAccessToken(accessToken);
                 return userOutputDTO;

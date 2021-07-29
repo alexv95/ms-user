@@ -40,8 +40,6 @@ class UserServiceSpec extends Specification {
         this.userService.validators = new Validators()
         this.userService.jwtTokenProvider = new JWTTokenProvider()
 
-
-
     }
 
 
